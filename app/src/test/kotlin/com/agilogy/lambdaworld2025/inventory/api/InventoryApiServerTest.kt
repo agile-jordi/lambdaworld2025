@@ -174,6 +174,33 @@ class InventoryApiServerTest {
     }
 
     @Test
+    @DisplayName("fail for negative amounts")
+    fun failForNegativeAmounts() {
+        val products = setOf(product)
+        testInventoryApi(products) {
+            val response =
+                post(
+                    "/reconcileStock",
+                    ReconcileStockRequest(product.sku, -2),
+                )
+            response.assertFailedWith(
+                HttpStatusCode.BadRequest,
+                jsonObject(
+                    "errors" to
+                        jsonArray(
+                            jsonObject(
+                                "amount" to
+                                    "must-be-non-negative"
+                                        .json
+                            )
+                        )
+                ),
+                emptySet(),
+            )
+        }
+    }
+
+    @Test
     @DisplayName(
         "return 5XX when there is an unexpected (e.g. infrastructure) error"
     )
