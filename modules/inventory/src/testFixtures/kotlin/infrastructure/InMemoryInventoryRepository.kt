@@ -2,6 +2,7 @@ package infrastructure
 
 import com.agilogy.lambdaworld2025.inventory.domain.InventoryLine
 import com.agilogy.lambdaworld2025.inventory.domain.InventoryRepository
+import com.agilogy.lambdaworld2025.product.domain.ProductId
 
 class InMemoryInventoryRepository(
     initialState: Set<InventoryLine>
@@ -14,7 +15,7 @@ class InMemoryInventoryRepository(
     }
 
     override fun getCurrentStock(
-        productId: String
+        productId: ProductId
     ): InventoryLine? =
         stock
             .filter { it.productId == productId }

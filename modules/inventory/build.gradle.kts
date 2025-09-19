@@ -12,4 +12,8 @@ dependencies {
     // Implementation modules
 
     implementation(projects.modules.product)
+
+    // Test fixtures implementation modules
+
+    testFixturesImplementation(projects.modules.product)
 }

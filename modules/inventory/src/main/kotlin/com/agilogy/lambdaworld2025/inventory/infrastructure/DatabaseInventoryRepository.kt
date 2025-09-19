@@ -2,6 +2,7 @@ package com.agilogy.lambdaworld2025.inventory.infrastructure
 
 import com.agilogy.lambdaworld2025.inventory.domain.InventoryLine
 import com.agilogy.lambdaworld2025.inventory.domain.InventoryRepository
+import com.agilogy.lambdaworld2025.product.domain.ProductId
 
 class DatabaseInventoryRepository : InventoryRepository {
 
@@ -10,6 +11,6 @@ class DatabaseInventoryRepository : InventoryRepository {
     }
 
     override fun getCurrentStock(
-        sku: String
+        productId: ProductId
     ): InventoryLine? = TODO()
 }

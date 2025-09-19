@@ -3,4 +3,11 @@ plugins {
     id("java-test-fixtures")
 }
 
-dependencies {}
+dependencies {
+
+    // Production libraries
+
+    implementation(libs.arrow.core)
+
+    // testImplementation libs
+}

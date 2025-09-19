@@ -5,6 +5,7 @@ import arrow.core.raise.either
 import arrow.core.raise.ensure
 import arrow.core.raise.ensureNotNull
 import com.agilogy.lambdaworld2025.product.domain.ProductsRepository
+import com.agilogy.lambdaworld2025.product.domain.Sku
 import kotlin.time.Clock
 import kotlin.time.Instant
 
@@ -15,7 +16,7 @@ class InventoryService(
 ) {
 
     fun reconcileStock(
-        sku: String,
+        sku: Sku,
         stock: Int,
         reconciliationDate: Instant? = null,
     ): Either<Error, InventoryLine> = either {
@@ -72,6 +73,8 @@ class InventoryService(
             "Illegal reconciliation date $reconciliationDate. It cannot be earlier or equal than the last reconciliation date $lastReconciliationDate"
         )
 
-    class ProductNotFound(val sku: String) :
-        Error("Product with sku $sku does not exist")
+    class ProductNotFound(val sku: Sku) :
+        Error(
+            "Product with sku ${sku.asString} does not exist"
+        )
 }

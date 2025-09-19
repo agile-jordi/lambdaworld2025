@@ -7,7 +7,9 @@ import com.agilogy.lambdaworld2025.json.json
 import com.agilogy.lambdaworld2025.json.jsonArray
 import com.agilogy.lambdaworld2025.json.jsonObject
 import com.agilogy.lambdaworld2025.product.domain.Product
+import com.agilogy.lambdaworld2025.product.domain.ProductId
 import com.agilogy.lambdaworld2025.product.domain.ProductsRepository
+import com.agilogy.lambdaworld2025.product.domain.Sku
 import infrastructure.InMemoryInventoryRepository
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.post
@@ -26,7 +28,11 @@ import org.junit.jupiter.api.Test
 
 const val productId = "45678964"
 const val productSku = "abc-123-1"
-val product = Product(id = "45678964", sku = "abc-123-1")
+val product =
+    Product(
+        id = ProductId("45678964").getOrFail(),
+        sku = Sku("abc-123-1").getOrFail(),
+    )
 
 class InventoryApiServerTest {
 
@@ -42,7 +48,7 @@ class InventoryApiServerTest {
                 post(
                     "/reconcileStock",
                     ReconcileStockRequest(
-                        product.sku,
+                        product.sku.asString,
                         stock,
                     ),
                 )
@@ -98,8 +104,6 @@ class InventoryApiServerTest {
         "fail for reconciliation dates in the future"
     )
     fun failForReconciliationDatesInTheFuture() {
-        val product =
-            Product(id = "45678964", sku = "abc-123-1")
         val products = setOf(product)
         testInventoryApi(products) {
             val reconciliationDate =
@@ -108,7 +112,7 @@ class InventoryApiServerTest {
                 post(
                     "/reconcileStock",
                     ReconcileStockRequest(
-                        product.sku,
+                        product.sku.asString,
                         23,
                         reconciliationDate
                             .toEpochMilliseconds(),
@@ -153,7 +157,7 @@ class InventoryApiServerTest {
                 post(
                     "/reconcileStock",
                     ReconcileStockRequest(
-                        product.sku,
+                        product.sku.asString,
                         23,
                         reconciliationDate
                             .toEpochMilliseconds(),
@@ -184,7 +188,10 @@ class InventoryApiServerTest {
             val response =
                 post(
                     "/reconcileStock",
-                    ReconcileStockRequest(product.sku, -2),
+                    ReconcileStockRequest(
+                        product.sku.asString,
+                        -2,
+                    ),
                 )
             response.assertFailedWith(
                 HttpStatusCode.BadRequest,
@@ -211,7 +218,7 @@ class InventoryApiServerTest {
         val failingProductsRepository =
             object : ProductsRepository {
                 override fun getProduct(
-                    sku: String
+                    sku: Sku
                 ): Product? =
                     throw RuntimeException(
                         "Database is unreachable!"

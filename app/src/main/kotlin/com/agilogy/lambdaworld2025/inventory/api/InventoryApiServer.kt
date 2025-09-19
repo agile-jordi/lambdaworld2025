@@ -1,7 +1,9 @@
 package com.agilogy.lambdaworld2025.inventory.api
 
+import arrow.core.raise.either
 import com.agilogy.lambdaworld2025.inventory.domain.IllegalStockAmountNegative
 import com.agilogy.lambdaworld2025.inventory.domain.InventoryService
+import com.agilogy.lambdaworld2025.product.domain.Sku
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
@@ -39,81 +41,86 @@ class InventoryApiServer(
             post("/reconcileStock") {
                 val body =
                     call.receive<ReconcileStockRequest>()
-                val requestReconciliationDate =
-                    body.reconciliationDate?.let {
-                        Instant.fromEpochMilliseconds(it)
-                    }
-                inventoryService
-                    .reconcileStock(
-                        body.sku,
-                        body.stock,
-                        requestReconciliationDate,
-                    )
-                    .fold(
-                        { error ->
-                            when (error) {
-                                is InventoryService.IllegalReconciliationDateEarlierThanLast ->
-                                    call.respond(
-                                        HttpStatusCode
-                                            .BadRequest,
-                                        ErrorResponse(
-                                            ResponseError(
-                                                reconciliationDate =
-                                                    "cannot-be-earlier-than-last"
-                                            )
-                                        ),
-                                    )
-                                is InventoryService.IllegalReconciliationDateInTheFuture ->
-                                    call.respond(
-                                        HttpStatusCode
-                                            .BadRequest,
-                                        ErrorResponse(
-                                            ResponseError(
-                                                reconciliationDate =
-                                                    "cannot-be-in-the-future"
-                                            )
-                                        ),
-                                    )
-                                is InventoryService.ProductNotFound ->
-                                    call.respond(
-                                        HttpStatusCode
-                                            .BadRequest,
-                                        ErrorResponse(
-                                            ResponseError(
-                                                sku =
-                                                    "not-found"
-                                            )
-                                        ),
-                                    )
-
-                                is IllegalStockAmountNegative ->
-                                    call.respond(
-                                        HttpStatusCode
-                                            .BadRequest,
-                                        ErrorResponse(
-                                            ResponseError(
-                                                amount =
-                                                    "must-be-non-negative"
-                                            )
-                                        ),
-                                    )
-                            }
-                        },
-                        { result ->
-                            val response =
-                                ReconcileStockResponse(
-                                    body.sku,
-                                    result.stock,
-                                    result
-                                        .reconciliationDate
-                                        .toEpochMilliseconds(),
-                                )
-                            call.respond(
-                                HttpStatusCode.OK,
-                                response,
+                val result = either {
+                    val requestReconciliationDate =
+                        body.reconciliationDate?.let {
+                            Instant.fromEpochMilliseconds(
+                                it
                             )
-                        },
-                    )
+                        }
+                    val sku: Sku = Sku(body.sku).bind()
+                    inventoryService
+                        .reconcileStock(
+                            sku,
+                            body.stock,
+                            requestReconciliationDate,
+                        )
+                        .bind()
+                }
+                result.fold(
+                    { error ->
+                        when (error) {
+                            is InventoryService.IllegalReconciliationDateEarlierThanLast ->
+                                call.respond(
+                                    HttpStatusCode
+                                        .BadRequest,
+                                    ErrorResponse(
+                                        ResponseError(
+                                            reconciliationDate =
+                                                "cannot-be-earlier-than-last"
+                                        )
+                                    ),
+                                )
+                            is InventoryService.IllegalReconciliationDateInTheFuture ->
+                                call.respond(
+                                    HttpStatusCode
+                                        .BadRequest,
+                                    ErrorResponse(
+                                        ResponseError(
+                                            reconciliationDate =
+                                                "cannot-be-in-the-future"
+                                        )
+                                    ),
+                                )
+                            is InventoryService.ProductNotFound ->
+                                call.respond(
+                                    HttpStatusCode
+                                        .BadRequest,
+                                    ErrorResponse(
+                                        ResponseError(
+                                            sku =
+                                                "not-found"
+                                        )
+                                    ),
+                                )
+
+                            is IllegalStockAmountNegative ->
+                                call.respond(
+                                    HttpStatusCode
+                                        .BadRequest,
+                                    ErrorResponse(
+                                        ResponseError(
+                                            amount =
+                                                "must-be-non-negative"
+                                        )
+                                    ),
+                                )
+                        }
+                    },
+                    { result ->
+                        val response =
+                            ReconcileStockResponse(
+                                body.sku,
+                                result.stock,
+                                result.reconciliationDate
+                                    .toEpochMilliseconds(),
+                            )
+                        call.respond(
+                            HttpStatusCode.OK,
+                            response,
+                        )
+                    },
+                )
             }
         }
     }
