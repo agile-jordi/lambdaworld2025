@@ -25,10 +25,8 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 include(":app")
 
-include(":modules:utils")
+include(":modules:inventory")
 
 include(":modules:product")
-
-include(":modules:inventory")
 
 rootProject.name = "lambdaworld-2025"

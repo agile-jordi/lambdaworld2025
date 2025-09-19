@@ -12,6 +12,9 @@ dependencies {
 
     // Production modules
 
+    implementation(projects.modules.inventory)
+    implementation(projects.modules.product)
+
     // implementation libraries
 
     implementation(libs.ktor.server.core)
@@ -20,7 +23,10 @@ dependencies {
     implementation(libs.ktor.server.content.negotiation)
     implementation(libs.ktor.serialization.kotlinx.json)
 
-    // testImplementation modules
+    // Test implementation modules
+
+    testImplementation(testFixtures(projects.modules.product))
+    testImplementation(testFixtures(projects.modules.inventory))
 
     // testImplementation libs
 
