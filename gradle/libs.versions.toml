@@ -4,10 +4,7 @@
 
 [versions]
 kotlin = "2.2.0"
-kotlinxDatetime = "0.6.1"
-kotlinxSerializationJson = "1.7.2"
-kotlinxCoroutines = "1.8.1"
-arrow = "2.1.2"
+kotlinxDatetime = "0.7.1"
 kotest = "5.9.1"
 ktor = "3.2.3"
 
@@ -19,34 +16,23 @@ spotlessGradlePlugin = { module = "com.diffplug.spotless:spotless-plugin-gradle"
 
 ## Kotlinx
 
-kotlinxDatetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
-kotlinxSerialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
-kotlinxCoroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
-
-## Arrow
-
-arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
-arrow-fx-coroutines = { module = "io.arrow-kt:arrow-fx-coroutines", version.ref = "arrow" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 
 ## Ktor
 
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
 ktor-server-test-host = { module = "io.ktor:ktor-server-test-host", version.ref = "ktor" }
 ktor-server-netty = { module = "io.ktor:ktor-server-netty-jvm", version.ref = "ktor" }
-ktor-server-status-pages = { module = "io.ktor:ktor-server-status-pages", version.ref = "ktor" }
+ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 
-## Other production libraries
-
-kotlinCsv = { module = "com.jsoizo:kotlin-csv-jvm", version = "1.10.0" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 
 ## Test libraries
 
 kotest-runner = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 
 # -- Bundles -----------------------------------------------------------------------------------------------------------
-
-[bundles]
-kotlinxEcosystem = ["kotlinxDatetime", "kotlinxSerialization", "kotlinxCoroutines"]
 
 # -- Plugins -----------------------------------------------------------------------------------------------------------
 
