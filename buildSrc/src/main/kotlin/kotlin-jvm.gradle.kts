@@ -19,27 +19,16 @@ kotlin {
     // Use a specific Java version to make it easier to work
     // in different environments.
     jvmToolchain(21)
-    compilerOptions.optIn.addAll(
-        "kotlin.time.ExperimentalTime",
-        "kotlin.uuid.ExperimentalUuidApi",
-    )
+    compilerOptions.optIn.addAll("kotlin.time.ExperimentalTime", "kotlin.uuid.ExperimentalUuidApi")
 }
 
-spotless {
-    kotlin {
-        ktfmt().kotlinlangStyle().configure {
-            it.setMaxWidth(60)
-        }
-    }
-}
+spotless { kotlin { ktfmt().kotlinlangStyle() } }
 
 dependencies {
     implementation("org.slf4j:slf4j-api:2.0.17")
     runtimeOnly("ch.qos.logback:logback-classic:1.4.14")
     testRuntimeOnly("ch.qos.logback:logback-classic:1.4.14")
-    testImplementation(
-        "org.junit.jupiter:junit-jupiter-api:5.8.1"
-    )
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
     testImplementation(kotlin("test"))
 }
 
@@ -49,11 +38,5 @@ tasks.test {
 
     // Log information about all test results, not only the
     // failed ones.
-    testLogging {
-        events(
-            TestLogEvent.FAILED,
-            TestLogEvent.PASSED,
-            TestLogEvent.SKIPPED,
-        )
-    }
+    testLogging { events(TestLogEvent.FAILED, TestLogEvent.PASSED, TestLogEvent.SKIPPED) }
 }

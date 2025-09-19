@@ -1,5 +1,6 @@
 package com.agilogy.lambdaworld2025.inventory.api
 
+import com.agilogy.lambdaworld2025.inventory.domain.InventoryService
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
@@ -16,10 +17,11 @@ import kotlin.time.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
-class InventoryApiServer(val clock: Clock) {
+class InventoryApiServer(val inventoryService: InventoryService) {
 
     fun start() {
-        embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = { module() }).start(wait = true)
+        embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = { module() })
+            .start(wait = true)
     }
 
     fun Application.module() {
@@ -27,15 +29,25 @@ class InventoryApiServer(val clock: Clock) {
         routing {
             post("/reconcileStock") {
                 val body = call.receive<ReconcileStockRequest>()
-                val reconciliationDate =
-                    body.reconciliationDate?.let { Instant.fromEpochMilliseconds(it) } ?: clock.now()
-                val response = ReconcileStockResponse(body.sku, body.stock, reconciliationDate.toEpochMilliseconds())
+                val requestReconciliationDate =
+                    body.reconciliationDate?.let { Instant.fromEpochMilliseconds(it) }
+                        ?: Clock.System.now()
+                val result =
+                    inventoryService.reconcileStock(body.sku, body.stock, requestReconciliationDate)
+                val response =
+                    ReconcileStockResponse(
+                        body.sku,
+                        result.stock,
+                        result.reconciliationDate.toEpochMilliseconds(),
+                    )
                 call.respond(HttpStatusCode.OK, response)
             }
         }
     }
 }
 
-@Serializable data class ReconcileStockRequest(val sku: String, val stock: Int, val reconciliationDate: Long?)
+@Serializable
+data class ReconcileStockRequest(val sku: String, val stock: Int, val reconciliationDate: Long?)
 
-@Serializable data class ReconcileStockResponse(val sku: String, val stock: Int, val reconciliationDate: Long)
+@Serializable
+data class ReconcileStockResponse(val sku: String, val stock: Int, val reconciliationDate: Long)
