@@ -5,6 +5,10 @@ plugins {
 
 dependencies {
 
+    // API libraries
+
+    api(libs.arrow.core)
+
     // Implementation modules
 
     implementation(projects.modules.product)
