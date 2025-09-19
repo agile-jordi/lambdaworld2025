@@ -13,8 +13,15 @@ dependencies {
 
     // implementation libraries
 
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.netty)
+    implementation(libs.ktor.server.test.host)
+
     // testImplementation modules
 
+    // testImplementation libs
+
+    testImplementation(libs.kotest.runner)
 }
 
 application {
