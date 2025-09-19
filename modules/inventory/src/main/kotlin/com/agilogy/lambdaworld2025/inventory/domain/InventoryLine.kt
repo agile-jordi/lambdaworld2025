@@ -1,5 +1,8 @@
 package com.agilogy.lambdaworld2025.inventory.domain
 
+import arrow.core.Either
+import arrow.core.raise.either
+import arrow.core.raise.ensure
 import kotlin.time.Instant
 
 class IllegalStockAmountNegative(val amount: Int) :
@@ -20,16 +23,18 @@ private constructor(
             productId: String,
             stock: Int,
             reconciliationDate: Instant,
-        ) =
+        ): Either<
+            IllegalStockAmountNegative,
+            InventoryLine,
+        > = either {
             ensure(stock >= 0) {
-                    IllegalStockAmountNegative(stock)
-                }
-                .map {
-                    InventoryLine(
-                        productId,
-                        stock,
-                        reconciliationDate,
-                    )
-                }
+                IllegalStockAmountNegative(stock)
+            }
+            InventoryLine(
+                productId,
+                stock,
+                reconciliationDate,
+            )
+        }
     }
 }
