@@ -13,6 +13,13 @@ class InMemoryInventoryRepository(
         this.stock.add(inventoryLine)
     }
 
+    override fun getCurrentStock(
+        productId: String
+    ): InventoryLine? =
+        stock
+            .filter { it.productId == productId }
+            .maxByOrNull { it.reconciliationDate }
+
     val state: Set<InventoryLine>
         get() = stock.toSet()
 }

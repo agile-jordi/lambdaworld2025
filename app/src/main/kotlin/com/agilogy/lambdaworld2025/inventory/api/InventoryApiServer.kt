@@ -42,20 +42,75 @@ class InventoryApiServer(
                     body.reconciliationDate?.let {
                         Instant.fromEpochMilliseconds(it)
                     }
-                val result =
-                    inventoryService.reconcileStock(
-                        body.sku,
-                        body.stock,
-                        requestReconciliationDate,
+                runCatching {
+                        inventoryService.reconcileStock(
+                            body.sku,
+                            body.stock,
+                            requestReconciliationDate,
+                        )
+                    }
+                    .fold(
+                        { result ->
+                            val response =
+                                ReconcileStockResponse(
+                                    body.sku,
+                                    result.stock,
+                                    result
+                                        .reconciliationDate
+                                        .toEpochMilliseconds(),
+                                )
+                            call.respond(
+                                HttpStatusCode.OK,
+                                response,
+                            )
+                        },
+                        { exception ->
+                            when (exception) {
+                                is InventoryService.ProductNotFound ->
+                                    call.respond(
+                                        HttpStatusCode
+                                            .BadRequest,
+                                        ErrorResponse(
+                                            ResponseError(
+                                                sku =
+                                                    "not-found"
+                                            )
+                                        ),
+                                    )
+                                is InventoryService.IllegalReconciliationDateInTheFuture ->
+                                    call.respond(
+                                        HttpStatusCode
+                                            .BadRequest,
+                                        ErrorResponse(
+                                            ResponseError(
+                                                reconciliationDate =
+                                                    "cannot-be-in-the-future"
+                                            )
+                                        ),
+                                    )
+
+                                is InventoryService.IllegalReconciliationDateEarlierThanLast ->
+                                    call.respond(
+                                        HttpStatusCode
+                                            .BadRequest,
+                                        ErrorResponse(
+                                            ResponseError(
+                                                reconciliationDate =
+                                                    "cannot-be-earlier-than-last"
+                                            )
+                                        ),
+                                    )
+                                else -> {
+                                    exception
+                                        .printStackTrace()
+                                    call.respond(
+                                        HttpStatusCode
+                                            .InternalServerError
+                                    )
+                                }
+                            }
+                        },
                     )
-                val response =
-                    ReconcileStockResponse(
-                        body.sku,
-                        result.stock,
-                        result.reconciliationDate
-                            .toEpochMilliseconds(),
-                    )
-                call.respond(HttpStatusCode.OK, response)
             }
         }
     }
@@ -76,7 +131,15 @@ data class ReconcileStockResponse(
 )
 
 @Serializable
-data class ErrorResponse(
-    val errorCode: String,
-    val message: String,
+data class ErrorResponse(val errors: List<ResponseError>) {
+    companion object {
+        operator fun invoke(vararg errors: ResponseError) =
+            ErrorResponse(errors.toList())
+    }
+}
+
+@Serializable
+data class ResponseError(
+    val sku: String? = null,
+    val reconciliationDate: String? = null,
 )

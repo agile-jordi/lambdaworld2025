@@ -6,4 +6,8 @@ data class InventoryLine(
     val productId: String,
     val stock: Int,
     val reconciliationDate: Instant,
-)
+) {
+    init {
+        require(stock >= 0) { "Stock cannot be negative" }
+    }
+}

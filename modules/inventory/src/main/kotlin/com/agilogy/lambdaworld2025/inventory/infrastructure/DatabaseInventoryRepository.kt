@@ -8,4 +8,8 @@ class DatabaseInventoryRepository : InventoryRepository {
     override fun register(inventoryLine: InventoryLine) {
         TODO()
     }
+
+    override fun getCurrentStock(
+        sku: String
+    ): InventoryLine? = TODO()
 }
