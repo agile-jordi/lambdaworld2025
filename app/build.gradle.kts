@@ -2,6 +2,7 @@ plugins {
     // Apply the shared build logic from a convention plugin.
     // The shared code is located in `buildSrc/src/main/kotlin/kotlin-jvm.gradle.kts`.
     id("buildsrc.convention.kotlin-jvm")
+    alias(libs.plugins.kotlinPluginSerialization)
 
     // Apply the Application plugin to add support for building an executable JVM application.
     application
@@ -16,12 +17,16 @@ dependencies {
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.netty)
     implementation(libs.ktor.server.test.host)
+    implementation(libs.ktor.server.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
 
     // testImplementation modules
 
     // testImplementation libs
 
     testImplementation(libs.kotest.runner)
+    testImplementation(libs.ktor.client.content.negotiation)
+    testImplementation(libs.kotlinx.datetime)
 }
 
 application {
