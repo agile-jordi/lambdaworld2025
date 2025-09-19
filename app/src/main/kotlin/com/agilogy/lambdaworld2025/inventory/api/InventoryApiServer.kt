@@ -65,7 +65,7 @@ class InventoryApiServer(
 data class ReconcileStockRequest(
     val sku: String,
     val stock: Int,
-    val reconciliationDate: Long?,
+    val reconciliationDate: Long? = null,
 )
 
 @Serializable
