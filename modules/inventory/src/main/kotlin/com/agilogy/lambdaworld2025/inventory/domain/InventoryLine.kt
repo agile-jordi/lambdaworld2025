@@ -3,17 +3,33 @@ package com.agilogy.lambdaworld2025.inventory.domain
 import kotlin.time.Instant
 
 class IllegalStockAmountNegative(val amount: Int) :
-    IllegalArgumentException(
+    InventoryService.Error(
         "Illegal stock amount: $amount. It can't be negative."
     )
 
-data class InventoryLine(
+@ConsistentCopyVisibility
+data class InventoryLine
+private constructor(
     val productId: String,
     val stock: Int,
     val reconciliationDate: Instant,
 ) {
-    init {
-        if (stock < 0)
-            throw IllegalStockAmountNegative(stock)
+
+    companion object {
+        operator fun invoke(
+            productId: String,
+            stock: Int,
+            reconciliationDate: Instant,
+        ) =
+            ensure(stock >= 0) {
+                    IllegalStockAmountNegative(stock)
+                }
+                .map {
+                    InventoryLine(
+                        productId,
+                        stock,
+                        reconciliationDate,
+                    )
+                }
     }
 }
