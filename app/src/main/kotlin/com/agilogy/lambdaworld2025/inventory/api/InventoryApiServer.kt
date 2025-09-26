@@ -1,5 +1,6 @@
 package com.agilogy.lambdaworld2025.inventory.api
 
+import com.agilogy.lambdaworld2025.inventory.domain.IllegalStockAmountNegative
 import com.agilogy.lambdaworld2025.inventory.domain.InventoryService
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
@@ -100,6 +101,18 @@ class InventoryApiServer(
                                             )
                                         ),
                                     )
+                                is IllegalStockAmountNegative ->
+                                    call.respond(
+                                        HttpStatusCode
+                                            .BadRequest,
+                                        ErrorResponse(
+                                            ResponseError(
+                                                amount =
+                                                    "must-be-non-negative"
+                                            )
+                                        ),
+                                    )
+
                                 else -> {
                                     exception
                                         .printStackTrace()
@@ -142,4 +155,5 @@ data class ErrorResponse(val errors: List<ResponseError>) {
 data class ResponseError(
     val sku: String? = null,
     val reconciliationDate: String? = null,
+    val amount: String? = null,
 )
