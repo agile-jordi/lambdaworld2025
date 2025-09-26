@@ -1,6 +1,5 @@
 package com.agilogy.lambdaworld2025.inventory.api
 
-import com.agilogy.lambdaworld2025.inventory.domain.IllegalStockAmountNegative
 import com.agilogy.lambdaworld2025.inventory.domain.InventoryService
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
@@ -43,38 +42,23 @@ class InventoryApiServer(
                     body.reconciliationDate?.let {
                         Instant.fromEpochMilliseconds(it)
                     }
-                runCatching {
-                        inventoryService.reconcileStock(
-                            body.sku,
-                            body.stock,
-                            requestReconciliationDate,
-                        )
-                    }
+                inventoryService
+                    .reconcileStock(
+                        body.sku,
+                        body.stock,
+                        requestReconciliationDate,
+                    )
                     .fold(
-                        { result ->
-                            val response =
-                                ReconcileStockResponse(
-                                    body.sku,
-                                    result.stock,
-                                    result
-                                        .reconciliationDate
-                                        .toEpochMilliseconds(),
-                                )
-                            call.respond(
-                                HttpStatusCode.OK,
-                                response,
-                            )
-                        },
-                        { exception ->
-                            when (exception) {
-                                is InventoryService.ProductNotFound ->
+                        { error ->
+                            when (error) {
+                                is InventoryService.IllegalReconciliationDateEarlierThanLast ->
                                     call.respond(
                                         HttpStatusCode
                                             .BadRequest,
                                         ErrorResponse(
                                             ResponseError(
-                                                sku =
-                                                    "not-found"
+                                                reconciliationDate =
+                                                    "cannot-be-earlier-than-last"
                                             )
                                         ),
                                     )
@@ -89,39 +73,32 @@ class InventoryApiServer(
                                             )
                                         ),
                                     )
-
-                                is InventoryService.IllegalReconciliationDateEarlierThanLast ->
+                                is InventoryService.ProductNotFound ->
                                     call.respond(
                                         HttpStatusCode
                                             .BadRequest,
                                         ErrorResponse(
                                             ResponseError(
-                                                reconciliationDate =
-                                                    "cannot-be-earlier-than-last"
+                                                sku =
+                                                    "not-found"
                                             )
                                         ),
                                     )
-                                is IllegalStockAmountNegative ->
-                                    call.respond(
-                                        HttpStatusCode
-                                            .BadRequest,
-                                        ErrorResponse(
-                                            ResponseError(
-                                                amount =
-                                                    "must-be-non-negative"
-                                            )
-                                        ),
-                                    )
-
-                                else -> {
-                                    exception
-                                        .printStackTrace()
-                                    call.respond(
-                                        HttpStatusCode
-                                            .InternalServerError
-                                    )
-                                }
                             }
+                        },
+                        { result ->
+                            val response =
+                                ReconcileStockResponse(
+                                    body.sku,
+                                    result.stock,
+                                    result
+                                        .reconciliationDate
+                                        .toEpochMilliseconds(),
+                                )
+                            call.respond(
+                                HttpStatusCode.OK,
+                                response,
+                            )
                         },
                     )
             }
