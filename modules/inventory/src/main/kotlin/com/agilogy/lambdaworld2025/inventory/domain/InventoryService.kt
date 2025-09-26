@@ -48,19 +48,20 @@ class InventoryService(
                                         .reconciliationDate,
                                 )
                             }
-                            .map {
+                            .flatMap {
                                 val reconciliationDate =
                                     reconciliationDate
                                         ?: clock.now()
-                                val line =
-                                    InventoryLine(
+                                InventoryLine(
                                         product.id,
                                         stock,
                                         reconciliationDate,
                                     )
-                                inventoryRepository
-                                    .register(line)
-                                line
+                                    .map { line ->
+                                        inventoryRepository
+                                            .register(line)
+                                        line
+                                    }
                             }
                     }
             }

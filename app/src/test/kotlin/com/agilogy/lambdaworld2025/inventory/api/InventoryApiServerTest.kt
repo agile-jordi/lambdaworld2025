@@ -1,5 +1,6 @@
 package com.agilogy.lambdaworld2025.inventory.api
 
+import arrow.core.Either
 import com.agilogy.lambdaworld2025.inventory.domain.InventoryLine
 import com.agilogy.lambdaworld2025.inventory.domain.InventoryService
 import com.agilogy.lambdaworld2025.json.json
@@ -19,7 +20,7 @@ import io.ktor.server.testing.testApplication
 import kotlin.test.assertEquals
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
-import kotlin.time.Instant
+import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
@@ -55,10 +56,11 @@ class InventoryApiServerTest {
                 ),
                 setOf(
                     InventoryLine(
-                        product.id,
-                        stock,
-                        clock.now(),
-                    )
+                            product.id,
+                            stock,
+                            clock.now(),
+                        )
+                        .getOrFail()
                 ),
             )
         }
@@ -137,10 +139,11 @@ class InventoryApiServerTest {
         val products = setOf(product)
         val initialProductStock =
             InventoryLine(
-                product.id,
-                50,
-                Clock.System.now(),
-            )
+                    product.id,
+                    50,
+                    Clock.System.now(),
+                )
+                .getOrFail()
         val initialInventory = setOf(initialProductStock)
         testInventoryApi(products, initialInventory) {
             val reconciliationDate =
@@ -246,7 +249,8 @@ class InventoryApiServerTest {
     }
 }
 
-fun Instant.truncateToMs() =
-    Instant.fromEpochMilliseconds(
-        Clock.System.now().toEpochMilliseconds()
+fun <E, A> Either<E, A>.getOrFail(): A =
+    this.fold(
+        { fail("Right expected but got $it") },
+        { it },
     )
