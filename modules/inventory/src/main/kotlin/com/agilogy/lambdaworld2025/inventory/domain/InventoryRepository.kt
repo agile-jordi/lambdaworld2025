@@ -4,7 +4,9 @@ import arrow.core.raise.Raise
 
 interface InventoryRepository {
 
-    fun Raise<ProductNotFound>.register(inventoryLine: InventoryLine): Unit
+    context(_: Raise<ProductNotFound>)
+    fun register(inventoryLine: InventoryLine)
 
-    fun Raise<ProductNotFound>.getCurrentStock(sku: String): InventoryLine?
+    context(_: Raise<ProductNotFound>)
+    fun getCurrentStock(sku: String): InventoryLine?
 }

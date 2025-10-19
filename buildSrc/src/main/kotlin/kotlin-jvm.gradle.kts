@@ -19,10 +19,16 @@ kotlin {
     // Use a specific Java version to make it easier to work
     // in different environments.
     jvmToolchain(21)
-    compilerOptions.optIn.addAll("kotlin.time.ExperimentalTime", "kotlin.uuid.ExperimentalUuidApi")
+    compilerOptions.optIn.addAll(
+        "kotlin.time.ExperimentalTime",
+        "kotlin.uuid.ExperimentalUuidApi",
+        "kotlin.contracts.ExperimentalContracts",
+        "kotlin.experimental.ExperimentalTypeInference",
+    )
+    compilerOptions.freeCompilerArgs.addAll("-Xcontext-parameters")
 }
 
-spotless { kotlin { ktfmt().kotlinlangStyle() } }
+spotless { kotlin { ktfmt("0.59").kotlinlangStyle() } }
 
 dependencies {
     implementation("org.slf4j:slf4j-api:2.0.17")
