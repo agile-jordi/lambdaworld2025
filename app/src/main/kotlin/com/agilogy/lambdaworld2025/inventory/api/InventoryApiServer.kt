@@ -32,15 +32,20 @@ class InventoryApiServer(val inventoryService: InventoryService) {
                 val requestReconciliationDate =
                     body.reconciliationDate?.let { Instant.fromEpochMilliseconds(it) }
                         ?: Clock.System.now()
-                val result =
-                    inventoryService.reconcileStock(body.sku, body.stock, requestReconciliationDate)
-                val response =
-                    ReconcileStockResponse(
-                        body.sku,
-                        result.stock,
-                        result.reconciliationDate.toEpochMilliseconds(),
+                inventoryService
+                    .reconcileStock(body.sku, body.stock, requestReconciliationDate)
+                    .fold(
+                        { call.respond(HttpStatusCode.BadRequest) },
+                        { line ->
+                            val response =
+                                ReconcileStockResponse(
+                                    body.sku,
+                                    line.stock,
+                                    line.reconciliationDate.toEpochMilliseconds(),
+                                )
+                            call.respond(HttpStatusCode.OK, response)
+                        },
                     )
-                call.respond(HttpStatusCode.OK, response)
             }
         }
     }

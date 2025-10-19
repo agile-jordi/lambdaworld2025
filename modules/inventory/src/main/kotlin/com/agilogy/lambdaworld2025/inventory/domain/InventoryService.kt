@@ -1,6 +1,7 @@
 package com.agilogy.lambdaworld2025.inventory.domain
 
-import com.agilogy.lambdaworld2025.product.domain.ProductsRepository
+import arrow.core.Either
+import arrow.core.flatMap
 import kotlin.time.Instant
 
 class InventoryService(
@@ -8,21 +9,24 @@ class InventoryService(
     val productsRepository: ProductsRepository,
 ) {
 
-    fun reconcileStock(sku: String, stock: Int, reconciliationDate: Instant): InventoryLine {
-        val currentStock =
-            try {
-                inventoryRepository.getCurrentStock(sku)
-            } catch (_: ProductNotFound) {
-                productsRepository.registerProduct(sku)
-                null
+    fun reconcileStock(
+        sku: String,
+        stock: Int,
+        reconciliationDate: Instant,
+    ): Either<ReconcileStockError, InventoryLine> =
+        inventoryRepository
+            .getCurrentStock(sku)
+            .orElse { productsRepository.registerProduct(sku).map { null } }
+            .flatMap { currentStock ->
+                if (currentStock != null && currentStock.reconciliationDate >= reconciliationDate) {
+                    Either.Left(IllegalReconciliationDateEarlierThanLast(currentStock))
+                } else {
+                    InventoryLine(sku, stock, reconciliationDate).flatMap { line ->
+                        inventoryRepository.register(line).map { line }
+                    }
+                }
             }
-
-        if (currentStock != null && currentStock.reconciliationDate >= reconciliationDate) {
-            throw IllegalReconciliationDateEarlierThanLast(currentStock)
-        }
-
-        val line = InventoryLine(sku, stock, reconciliationDate)
-        inventoryRepository.register(line)
-        return line
-    }
 }
+
+fun <E : E2, E2, A> Either<E, A>.orElse(f: (E) -> Either<E2, A>): Either<E2, A> =
+    fold({ f(it) }, { this })

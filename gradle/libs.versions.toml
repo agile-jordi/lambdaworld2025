@@ -5,8 +5,9 @@
 [versions]
 kotlin = "2.2.0"
 kotlinxDatetime = "0.7.1"
-kotest = "5.9.1"
+kotlinxJson = "1.9.0"
 ktor = "3.2.3"
+arrow = "2.1.2"
 
 # -- Libraries ---------------------------------------------------------------------------------------------------------
 
@@ -17,6 +18,7 @@ spotlessGradlePlugin = { module = "com.diffplug.spotless:spotless-plugin-gradle"
 ## Kotlinx
 
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxJson" }
 
 ## Ktor
 
@@ -28,9 +30,12 @@ ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx
 
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 
-## Test libraries
+## Arrow
 
-kotest-runner = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
+arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
+
+
+## Test libraries
 
 # -- Bundles -----------------------------------------------------------------------------------------------------------
 

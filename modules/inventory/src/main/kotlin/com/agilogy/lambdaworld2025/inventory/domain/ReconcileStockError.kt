@@ -1,9 +1,9 @@
 package com.agilogy.lambdaworld2025.inventory.domain
 
-data class IllegalReconciliationDateEarlierThanLast(val last: InventoryLine) :
-    Exception("IllegalReconciliationDateEarlierThanLast: $last")
+sealed interface ReconcileStockError
 
-data class IllegalStockAmountNegative(val amount: Int) :
-    Exception("IllegalStockAmountNegative: $amount")
+data class IllegalReconciliationDateEarlierThanLast(val last: InventoryLine) : ReconcileStockError
 
-data class ProductNotFound(val sku: String) : Exception("ProductNotFound: $sku")
+data class IllegalStockAmountNegative(val amount: Int) : ReconcileStockError
+
+data class ProductNotFound(val sku: String) : ReconcileStockError

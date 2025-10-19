@@ -3,4 +3,4 @@ plugins {
     id("java-test-fixtures")
 }
 
-dependencies {}
+dependencies { implementation(libs.arrow.core) }

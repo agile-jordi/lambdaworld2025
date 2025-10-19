@@ -8,4 +8,8 @@ dependencies {
     // Implementation modules
 
     implementation(projects.modules.product)
+
+    // Implementation libraries
+
+    api(libs.arrow.core)
 }

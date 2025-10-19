@@ -30,7 +30,6 @@ dependencies {
 
     // testImplementation libs
 
-    testImplementation(libs.kotest.runner)
     testImplementation(libs.ktor.client.content.negotiation)
     testImplementation(libs.kotlinx.datetime)
 }
