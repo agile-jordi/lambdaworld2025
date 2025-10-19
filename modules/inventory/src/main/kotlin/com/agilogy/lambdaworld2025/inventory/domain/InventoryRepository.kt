@@ -1,10 +1,10 @@
 package com.agilogy.lambdaworld2025.inventory.domain
 
-import arrow.core.Either
+import arrow.core.raise.Raise
 
 interface InventoryRepository {
 
-    fun register(inventoryLine: InventoryLine): Either<ProductNotFound, Unit>
+    fun Raise<ProductNotFound>.register(inventoryLine: InventoryLine): Unit
 
-    fun getCurrentStock(sku: String): Either<ProductNotFound, InventoryLine?>
+    fun Raise<ProductNotFound>.getCurrentStock(sku: String): InventoryLine?
 }

@@ -1,8 +1,6 @@
 package com.agilogy.lambdaworld2025.inventory.domain
 
-import arrow.core.Either
-import arrow.core.getOrElse
-import arrow.core.raise.either
+import arrow.core.raise.Raise
 import arrow.core.raise.recover
 import kotlin.time.Instant
 
@@ -11,24 +9,22 @@ class InventoryService(
     val productsRepository: ProductsRepository,
 ) {
 
-    fun reconcileStock(
+    fun Raise<ReconcileStockError>.reconcileStock(
         sku: String,
         stock: Int,
         reconciliationDate: Instant,
-    ): Either<ReconcileStockError, InventoryLine> = either {
+    ): InventoryLine {
         val currentStock =
-            recover(inventoryRepository.getCurrentStock(sku)) {
-                productsRepository.registerProduct(sku).bind()
+            recover({ with(inventoryRepository) { getCurrentStock(sku) } }) {
+                with(productsRepository) { registerProduct(sku) }
                 null
             }
 
         if (currentStock != null && currentStock.reconciliationDate >= reconciliationDate) {
             raise(IllegalReconciliationDateEarlierThanLast(currentStock))
         }
-        val line = InventoryLine(sku, stock, reconciliationDate).bind()
-        inventoryRepository.register(line).bind()
-        line
+        val line = with(InventoryLine) { invoke(sku, stock, reconciliationDate) }
+        with(inventoryRepository) { register(line) }
+        return line
     }
 }
-
-fun <E, A> recover(e: Either<E, A>, f: (E) -> A): A = e.getOrElse(f)

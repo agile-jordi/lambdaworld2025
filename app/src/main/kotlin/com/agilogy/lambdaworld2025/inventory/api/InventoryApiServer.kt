@@ -1,6 +1,8 @@
 package com.agilogy.lambdaworld2025.inventory.api
 
+import arrow.core.raise.recover
 import com.agilogy.lambdaworld2025.inventory.domain.InventoryService
+import com.agilogy.lambdaworld2025.inventory.domain.ReconcileStockError
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
@@ -32,20 +34,20 @@ class InventoryApiServer(val inventoryService: InventoryService) {
                 val requestReconciliationDate =
                     body.reconciliationDate?.let { Instant.fromEpochMilliseconds(it) }
                         ?: Clock.System.now()
-                inventoryService
-                    .reconcileStock(body.sku, body.stock, requestReconciliationDate)
-                    .fold(
-                        { call.respond(HttpStatusCode.BadRequest) },
-                        { line ->
-                            val response =
-                                ReconcileStockResponse(
-                                    body.sku,
-                                    line.stock,
-                                    line.reconciliationDate.toEpochMilliseconds(),
-                                )
-                            call.respond(HttpStatusCode.OK, response)
-                        },
-                    )
+                with(inventoryService) {
+                    recover<ReconcileStockError, _>({
+                        val line = reconcileStock(body.sku, body.stock, requestReconciliationDate)
+                        val response =
+                            ReconcileStockResponse(
+                                body.sku,
+                                line.stock,
+                                line.reconciliationDate.toEpochMilliseconds(),
+                            )
+                        call.respond(HttpStatusCode.OK, response)
+                    }) {
+                        call.respond(HttpStatusCode.BadRequest)
+                    }
+                }
             }
         }
     }
