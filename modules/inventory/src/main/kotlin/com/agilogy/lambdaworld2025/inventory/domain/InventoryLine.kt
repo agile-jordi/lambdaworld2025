@@ -1,6 +1,7 @@
 package com.agilogy.lambdaworld2025.inventory.domain
 
 import arrow.core.Either
+import arrow.core.raise.either
 import kotlin.time.Instant
 
 @ConsistentCopyVisibility
@@ -12,8 +13,9 @@ private constructor(val sku: String, val stock: Int, val reconciliationDate: Ins
             sku: String,
             stock: Int,
             reconciliationDate: Instant,
-        ): Either<IllegalStockAmountNegative, InventoryLine> =
-            if (stock < 0) Either.Left(IllegalStockAmountNegative(stock))
-            else Either.Right(InventoryLine(sku, stock, reconciliationDate))
+        ): Either<IllegalStockAmountNegative, InventoryLine> = either {
+            if (stock < 0) raise(IllegalStockAmountNegative(stock))
+            InventoryLine(sku, stock, reconciliationDate)
+        }
     }
 }
