@@ -9,6 +9,20 @@ class InventoryService(
 ) {
 
     fun reconcileStock(sku: String, stock: Int, reconciliationDate: Instant): InventoryLine {
-        TODO()
+        val currentStock =
+            try {
+                inventoryRepository.getCurrentStock(sku)
+            } catch (_: ProductNotFound) {
+                productsRepository.registerProduct(sku)
+                null
+            }
+
+        if (currentStock != null && currentStock.reconciliationDate >= reconciliationDate) {
+            throw IllegalReconciliationDateEarlierThanLast(currentStock)
+        }
+
+        val line = InventoryLine(sku, stock, reconciliationDate)
+        inventoryRepository.register(line)
+        return line
     }
 }
