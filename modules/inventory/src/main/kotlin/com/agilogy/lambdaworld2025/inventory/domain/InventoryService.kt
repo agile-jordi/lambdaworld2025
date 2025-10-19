@@ -9,22 +9,22 @@ class InventoryService(
     val productsRepository: ProductsRepository,
 ) {
 
-    fun Raise<ReconcileStockError>.reconcileStock(
-        sku: String,
-        stock: Int,
-        reconciliationDate: Instant,
-    ): InventoryLine {
+    context(_: Raise<ReconcileStockError>)
+    fun reconcileStock(sku: String, stock: Int, reconciliationDate: Instant): InventoryLine {
         val currentStock =
-            recover({ with(inventoryRepository) { getCurrentStock(sku) } }) {
-                with(productsRepository) { registerProduct(sku) }
+            recover({ inventoryRepository.getCurrentStock(sku) }) {
+                productsRepository.registerProduct(sku)
                 null
             }
 
         if (currentStock != null && currentStock.reconciliationDate >= reconciliationDate) {
             raise(IllegalReconciliationDateEarlierThanLast(currentStock))
         }
-        val line = with(InventoryLine) { invoke(sku, stock, reconciliationDate) }
-        with(inventoryRepository) { register(line) }
+        val line = InventoryLine(sku, stock, reconciliationDate)
+        inventoryRepository.register(line)
         return line
     }
 }
+
+context(r: Raise<E>)
+fun <E> raise(error: E): Nothing = r.raise(error)

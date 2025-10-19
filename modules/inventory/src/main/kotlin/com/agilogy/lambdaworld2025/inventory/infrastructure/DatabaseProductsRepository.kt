@@ -9,5 +9,6 @@ class DatabaseProductsRepository : ProductsRepository {
 
     override fun getProduct(sku: String): Product? = TODO("Not yet implemented")
 
-    override fun Raise<IllegalSku>.registerProduct(sku: String): Unit = TODO("Not yet implemented")
+    context(_: Raise<IllegalSku>)
+    override fun registerProduct(sku: String): Unit = TODO("Not yet implemented")
 }

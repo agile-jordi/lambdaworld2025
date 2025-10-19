@@ -6,7 +6,8 @@ interface ProductsRepository {
 
     fun getProduct(sku: String): Product?
 
-    fun Raise<IllegalSku>.registerProduct(sku: String): Unit
+    context(_: Raise<IllegalSku>)
+    fun registerProduct(sku: String): Unit
 }
 
 data class IllegalSku(val sku: String) : ReconcileStockError
