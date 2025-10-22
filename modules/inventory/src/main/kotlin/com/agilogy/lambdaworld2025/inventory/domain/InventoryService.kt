@@ -1,6 +1,7 @@
 package com.agilogy.lambdaworld2025.inventory.domain
 
 import arrow.core.Either
+import arrow.core.getOrElse
 import arrow.core.raise.either
 import arrow.core.raise.recover
 import kotlin.time.Instant
@@ -16,7 +17,7 @@ class InventoryService(
         reconciliationDate: Instant,
     ): Either<ReconcileStockError, InventoryLine> = either {
         val currentStock =
-            recover({ inventoryRepository.getCurrentStock(sku).bind() }) {
+            recover(inventoryRepository.getCurrentStock(sku)) {
                 productsRepository.registerProduct(sku).bind()
                 null
             }
@@ -29,3 +30,5 @@ class InventoryService(
         line
     }
 }
+
+fun <E, A> recover(e: Either<E, A>, f: (E) -> A): A = e.getOrElse(f)
